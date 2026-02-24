@@ -1,5 +1,11 @@
 from pyrogram import Client, enums
-from pyrogram.types import LinkPreviewOptions
+try:
+    from pyrogram.types import LinkPreviewOptions
+except ImportError:
+    # Fallback for older pyrogram versions
+    class LinkPreviewOptions:
+        def __init__(self, is_disabled=False):
+            self.is_disabled = is_disabled
 from asyncio import Lock
 
 from .. import LOGGER
