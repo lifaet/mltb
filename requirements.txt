@@ -25,6 +25,7 @@ psutil
 pyrogram
 python-magic
 requests
+six
 telegraph
 tenacity
 tgcrypto

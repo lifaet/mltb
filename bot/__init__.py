@@ -1,3 +1,18 @@
+import sys
+import os
+from pathlib import Path
+
+# Add user site-packages to path for packages installed with pip --user
+# This ensures packages installed in ~/.local/lib/pythonX.Y/site-packages are found
+user_site_packages = [
+    os.path.expanduser(f"~/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"),
+    "/usr/local/lib/python3/dist-packages",
+    "/usr/lib/python3/dist-packages",
+]
+for path in user_site_packages:
+    if os.path.exists(path) and path not in sys.path:
+        sys.path.insert(0, path)
+
 from uvloop import install
 
 install()
