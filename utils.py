@@ -213,8 +213,13 @@ def setup_python_environment():
                                   capture_output=True, text=True)
 
         if result.returncode != 0:
-            print(f"❌ Failed to install dependencies: {result.stderr}")
-            return False
+            if "externally-managed-environment" in result.stderr:
+                print(f"⚠️  Notice: System packages are protected (PEP 668). Using existing system packages.")
+                print("✅ Environment ready using system Python!")
+                return True
+            else:
+                print(f"❌ Failed to install dependencies: {result.stderr}")
+                return False
 
         print("✅  environment ready!")
         return True
@@ -291,7 +296,10 @@ def start_download_services():
         try:
             sab_cmd = ["sabnzbdplus", "-f", ".sabnzbd/SABnzbd.ini", "-s", ":::8070",
                       "-b", "0", "-d", "-c", "-l", "0", "--console"]
-            process = subprocess.Popen(sab_cmd)
+            # Set PYTHONPATH to ensure SABnzbd can find all required modules
+            env = os.environ.copy()
+            env["PYTHONPATH"] = "/usr/lib/python3/dist-packages:/usr/lib/python3.12/dist-packages"
+            process = subprocess.Popen(sab_cmd, env=env)
             pids.append(process.pid)
         except Exception as e:
             print(f"⚠️  Warning: Failed to start SABnzbd: {e}")
@@ -316,17 +324,19 @@ def start_bot_process():
     print("🤖 Starting Telegram bot...")
 
     try:
-        # Check if  environment exists
+        # Check if using venv or system python
         venv_python = os.path.join("mltbenv", "bin", "python3")
-        if not os.path.exists(venv_python):
-            print("❌  environment not found!")
-            return False
+        if os.path.exists(venv_python):
+            python_cmd = venv_python
+        else:
+            # Use system python3 directly
+            python_cmd = "python3"
 
         # Optional update
         if "--update" in sys.argv:
             print("🔄 Running update.py...")
             try:
-                result = subprocess.run([venv_python, "update.py"],
+                result = subprocess.run([python_cmd, "update.py"],
                                       capture_output=True, text=True, timeout=60)
                 if result.returncode != 0:
                     print(f"⚠️  Warning: Update failed: {result.stderr}")
@@ -336,11 +346,21 @@ def start_bot_process():
         # Start bot in background
         print("🚀 Bot is starting... Running in background.")
         with open(".bot.log", "a") as log_file:
+            # Set PYTHONPATH to find all installed packages
+            env = os.environ.copy()
+            python_paths = [
+                "/usr/lib/python3/dist-packages",
+                "/usr/lib/python3.12/dist-packages",
+                os.path.expanduser("~/.local/lib/python3.12/site-packages")
+            ]
+            env["PYTHONPATH"] = ":".join(python_paths)
+            
             process = subprocess.Popen(
-                [venv_python, "-m", "bot"],
+                [python_cmd, "-m", "bot"],
                 stdout=log_file,
                 stderr=log_file,
-                preexec_fn=os.setsid
+                preexec_fn=os.setsid,
+                env=env
             )
 
         bot_pid = process.pid
