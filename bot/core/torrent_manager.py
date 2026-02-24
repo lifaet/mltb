@@ -1,6 +1,6 @@
 from aioaria2 import Aria2WebsocketClient
 from aioqbt.client import create_client
-from asyncio import gather, TimeoutError
+from asyncio import gather, TimeoutError, wait_for
 from aiohttp import ClientError
 from pathlib import Path
 from inspect import iscoroutinefunction
@@ -47,18 +47,27 @@ class TorrentManager:
         ]
         
         qb_client = None
+        last_error = None
         for url in qb_urls:
             try:
                 LOGGER.debug(f"Trying qBittorrent at {url}")
-                qb_client = await create_client(url)
+                # Add timeout to prevent hanging
+                qb_client = await wait_for(create_client(url), timeout=10)
                 LOGGER.info(f"Successfully connected to qBittorrent at {url}")
                 break
+            except TimeoutError:
+                last_error = f"Timeout connecting to {url}"
+                LOGGER.debug(f"Timeout connecting to qBittorrent at {url}")
+                continue
             except Exception as e:
-                LOGGER.debug(f"Failed to connect to qBittorrent at {url}: {e}")
+                last_error = str(e)
+                LOGGER.debug(f"Failed to connect to qBittorrent at {url}: {type(e).__name__}: {e}")
                 continue
         
         if qb_client is None:
-            raise ConnectionError("Could not connect to qBittorrent on any address")
+            error_msg = f"Could not connect to qBittorrent on any address. Last error: {last_error}"
+            LOGGER.error(error_msg)
+            raise ConnectionError(error_msg)
         
         cls.aria2, cls.qbittorrent = await gather(
             Aria2WebsocketClient.new("http://127.0.0.1:6800/jsonrpc"),
