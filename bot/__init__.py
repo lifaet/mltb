@@ -4,9 +4,12 @@ from pathlib import Path
 
 # Add user site-packages to path for packages installed with pip --user
 # This ensures packages installed in ~/.local/lib/pythonX.Y/site-packages are found
+py_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
 user_site_packages = [
-    os.path.expanduser(f"~/.local/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"),
+    os.path.expanduser(f"~/.local/lib/{py_version}/site-packages"),
+    f"/usr/local/lib/{py_version}/dist-packages",
     "/usr/local/lib/python3/dist-packages",
+    f"/usr/lib/{py_version}/dist-packages",
     "/usr/lib/python3/dist-packages",
 ]
 for path in user_site_packages:
