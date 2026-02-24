@@ -175,26 +175,25 @@ def setup_python_environment():
     """Setup Python virtual environment and install dependencies"""
     print("🐍 Setting up Python virtual environment...")
 
-    venv_dir = "botenv"
+    # venv_dir = "mltbenv"
 
     # Create virtual environment if it doesn't exist
-    if not os.path.exists(venv_dir):
-        print("📦 Creating virtual environment...")
-        try:
-            result = subprocess.run(["python3", "-m", "venv", venv_dir],
-                                  capture_output=True, text=True)
-            if result.returncode != 0:
-                print(f"❌ Failed to create virtual environment: {result.stderr}")
-                return False
-        except Exception as e:
-            print(f"❌ Error creating virtual environment: {e}")
-            return False
-    else:
-        print("📦 Virtual environment already exists.")
+    # if not os.path.exists(venv_dir):
+    #     print("📦 Creating virtual environment...")
+    #     try:
+    #         result = subprocess.run(["python3", "-m", "venv", venv_dir],
+    #                               capture_output=True, text=True)
+    #         if result.returncode != 0:
+    #             print(f"❌ Failed to create virtual environment: {result.stderr}")
+    #             return False
+    #     except Exception as e:
+    #         print(f"❌ Error creating virtual environment: {e}")
+    #         return False
+    # else:
+    #     print("📦 Virtual environment already exists.")
 
-    # Activate virtual environment and install dependencies
-    activate_script = os.path.join(venv_dir, "bin", "activate")
-    pip_cmd = os.path.join(venv_dir, "bin", "pip")
+    # Activate environment and install dependencies
+    pip_cmd = "pip"
 
     try:
         # Upgrade pip
