@@ -31,7 +31,7 @@ uvicorn
 uvloop
 xattr
 yt-dlp[default,curl-cffi]
-aria2c
+aria2
 qbittorrent-nox
 sabnzbdplus
 ffmpeg
