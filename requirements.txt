@@ -16,12 +16,13 @@ gunicorn
 httpx
 jaraco.text
 jinja2
+kurigram
 lxml
 natsort
 par2cmdline-turbo
 pillow
 psutil
-kurigram
+pyrogram
 python-magic
 requests
 telegraph

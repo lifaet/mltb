@@ -213,7 +213,7 @@ git clone
 - For Debian based distros
 
 ```
-sudo apt install python3 python3-pip python3-venv aria2 qbittorrent-nox sabnzbdplus ffmpeg par2 curl
+sudo apt install python3 python3-pip aria2 qbittorrent-nox sabnzbdplus ffmpeg par2 curl
 ```
 
 - For Arch and it's derivatives:
@@ -222,11 +222,14 @@ sudo apt install python3 python3-pip python3-venv aria2 qbittorrent-nox sabnzbdp
 sudo pacman -S python python-pip aria2 qbittorrent-nox sabnzbd ffmpeg par2 curl
 ```
 
-- Install dependencies for running setup scripts:
+- Install Python dependencies (system-wide):
 
 ```
-pip3 install -r requirements-cli.txt
+pip3 install --break-system-packages -r requirements.txt
 ```
+
+**Note on PEP 668 (Python External Package Management):**
+The `--break-system-packages` flag is required because modern Python distributions (Debian 12+, Ubuntu 23.10+, etc.) protect system Python packages for stability. This bot uses system Python directly instead of a virtual environment for simpler deployment and process management. The `--break-system-packages` flag allows us to install the required dependencies system-wide, which is safe for this use case since this is a dedicated bot deployment.
 
 - **Easy setup (recommended):**
 
@@ -250,7 +253,60 @@ Then edit config.py with your bot details. See below for field descriptions.
 - `TELEGRAM_API`: Get from [my.telegram.org](https://my.telegram.org)
 - `TELEGRAM_HASH`: Get from [my.telegram.org](https://my.telegram.org)
 
+</details>
+
+<details>
+  <summary><h5>2. Quick Start</h5></summary>
+
+**Complete Installation Steps:**
+
+1. **Install system dependencies:**
+   ```bash
+   # For Debian/Ubuntu
+   sudo apt install python3 python3-pip aria2 qbittorrent-nox sabnzbdplus ffmpeg par2 curl
+
+   # For Arch/Manjaro
+   sudo pacman -S python python-pip aria2 qbittorrent-nox sabnzbd ffmpeg par2 curl
+   ```
+
+2. **Clone and enter the repository:**
+   ```bash
+   git clone <repo-url> mltb
+   cd mltb
+   ```
+
+3. **Install Python dependencies:**
+   ```bash
+   pip3 install --break-system-packages -r requirements.txt
+   ```
+
+4. **Configure your bot:**
+   ```bash
+   python3 setup.py
+   ```
+   Or manually: `cp config_sample.py config.py` and edit it
+
+5. **Start the bot:**
+   ```bash
+   python3 utils.py run
+   ```
+
+6. **Check status:**
+   ```bash
+   python3 utils.py status
+   ```
+
+**Common Commands:**
+```bash
+python3 utils.py run       # Start bot and all services
+python3 utils.py stop      # Stop everything
+python3 utils.py status    # Check status
+python3 utils.py restart   # Restart bot
+python3 utils.py monitor   # Monitor health
+```
+
 **Optional Configuration:**
+- `BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather)
 - `USER_SESSION_STRING`: For premium features (generate with `python3 utils.py session`)
 - `GDRIVE_ID`: Google Drive folder ID
 - `RCLONE_PATH`: Rclone remote path
@@ -445,10 +501,14 @@ python3 utils.py run
 
 This single command will:
 - Check your configuration
-- Set up the virtual environment (if needed)
-- Install/update dependencies
+- Validate all system dependencies
 - Start all required services (aria2c, qBittorrent, SABnzbd)
 - Run the bot
+
+**Note:** The bot runs directly with system Python 3.12. Make sure to install all dependencies first with:
+```
+pip3 install --break-system-packages -r requirements.txt
+```
 
 - **Advanced options:**
 
