@@ -25,7 +25,7 @@ config.py
 token.pickle
 rclone.conf
 .netrc
-
+service.json
 # Log files
 *.log
 log.txt
