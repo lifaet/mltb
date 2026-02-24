@@ -205,7 +205,7 @@ def setup_python_environment():
         # Install requirements
         print("📥 Installing/updating dependencies...")
         if os.path.exists("requirements.txt"):
-            result = subprocess.run([pip_cmd, "install", "-r", "requirements.txt"],
+            result = subprocess.run(["sudo apt", "install", "-r", "requirements.txt"],
                                   capture_output=True, text=True)
         else:
             print("⚠️  requirements.txt not found, installing basic dependencies...")
