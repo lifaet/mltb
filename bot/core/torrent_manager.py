@@ -1,7 +1,7 @@
 from aioaria2 import Aria2WebsocketClient
 from aioqbt.client import create_client
 from asyncio import gather, TimeoutError, wait_for
-from aiohttp import ClientError, TCPConnector
+from aiohttp import ClientError, TCPConnector, ClientSession
 from pathlib import Path
 from inspect import iscoroutinefunction
 from tenacity import (
@@ -48,29 +48,25 @@ class TorrentManager:
         
         qb_client = None
         last_error = None
+        
+        # Create a connector with SSL disabled
+        connector = TCPConnector(ssl=False, limit=10)
+        
         for url in qb_urls:
             try:
                 LOGGER.debug(f"Trying qBittorrent at {url}")
-                # Create connector with SSL disabled for HTTP connections
-                connector = TCPConnector(ssl=False, limit=10)
-                # Add timeout to prevent hanging
-                qb_client = await wait_for(
-                    create_client(url, connector=connector), 
-                    timeout=10
-                )
-                LOGGER.info(f"Successfully connected to qBittorrent at {url}")
-                break
-            except TypeError:
-                # If connector parameter not supported, try without it
+                # Try with explicit session first
+                session = ClientSession(connector=connector)
                 try:
-                    LOGGER.debug(f"Retrying {url} without connector parameter")
-                    qb_client = await wait_for(create_client(url), timeout=10)
+                    qb_client = await wait_for(
+                        create_client(url, session=session),
+                        timeout=10
+                    )
                     LOGGER.info(f"Successfully connected to qBittorrent at {url}")
                     break
-                except Exception as e:
-                    last_error = str(e)
-                    LOGGER.debug(f"Failed (retry): {type(e).__name__}: {e}")
-                    continue
+                except Exception:
+                    await session.close()
+                    raise
             except TimeoutError:
                 last_error = f"Timeout connecting to {url}"
                 LOGGER.debug(f"Timeout connecting to qBittorrent at {url}")
