@@ -86,8 +86,8 @@ def run_application_complete():
             return False
 
         # Step 3: Setup virtual environment and install dependencies
-        if not setup_python_environment():
-            return False
+        # if not setup_python_environment():
+        #     return False
 
         # Step 4: Start services
         if not start_download_services():
