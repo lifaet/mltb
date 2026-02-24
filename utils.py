@@ -331,6 +331,13 @@ def start_bot_process():
     print("🤖 Starting Telegram bot...")
 
     try:
+        # Get the mltb directory (where this script resides)
+        mltb_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Ensure sessions directory exists
+        sessions_dir = os.path.join(mltb_dir, "sessions")
+        os.makedirs(sessions_dir, exist_ok=True)
+        
         # Check if using venv or system python
         venv_python = os.path.join("mltbenv", "bin", "python3")
         if os.path.exists(venv_python):
@@ -344,7 +351,7 @@ def start_bot_process():
             print("🔄 Running update.py...")
             try:
                 result = subprocess.run([python_cmd, "update.py"],
-                                      capture_output=True, text=True, timeout=60)
+                                      capture_output=True, text=True, timeout=60, cwd=mltb_dir)
                 if result.returncode != 0:
                     print(f"⚠️  Warning: Update failed: {result.stderr}")
             except Exception as e:
@@ -375,7 +382,8 @@ def start_bot_process():
                 stdout=log_file,
                 stderr=log_file,
                 preexec_fn=os.setsid,
-                env=env
+                env=env,
+                cwd=mltb_dir
             )
 
         bot_pid = process.pid
