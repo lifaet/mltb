@@ -43,20 +43,34 @@ class TgClient:
                 link_preview_options=LinkPreviewOptions(is_disabled=True),
             )
         except TypeError:
-            # Fallback for older pyrogram versions
-            LOGGER.warning("Using fallback Client initialization for older pyrogram")
-            cls.bot = Client(
-                cls.ID,
-                Config.TELEGRAM_API,
-                Config.TELEGRAM_HASH,
-                proxy=Config.TG_PROXY,
-                bot_token=Config.BOT_TOKEN,
-                workdir="./sessions",
-                parse_mode=enums.ParseMode.HTML,
-                max_concurrent_transmissions=10,
-                sleep_threshold=0,
-                link_preview_options=LinkPreviewOptions(is_disabled=True),
-            )
+            # Fallback for older pyrogram versions - try without cache parameters
+            try:
+                LOGGER.warning("Retrying Client initialization without cache size parameters")
+                cls.bot = Client(
+                    cls.ID,
+                    Config.TELEGRAM_API,
+                    Config.TELEGRAM_HASH,
+                    proxy=Config.TG_PROXY,
+                    bot_token=Config.BOT_TOKEN,
+                    workdir="./sessions",
+                    parse_mode=enums.ParseMode.HTML,
+                    max_concurrent_transmissions=10,
+                    sleep_threshold=0,
+                    link_preview_options=LinkPreviewOptions(is_disabled=True),
+                )
+            except TypeError:
+                # Final fallback for very old pyrogram versions
+                LOGGER.warning("Using minimal Client initialization for pyrogram 2.0.106")
+                cls.bot = Client(
+                    cls.ID,
+                    Config.TELEGRAM_API,
+                    Config.TELEGRAM_HASH,
+                    proxy=Config.TG_PROXY,
+                    bot_token=Config.BOT_TOKEN,
+                    workdir="./sessions",
+                    parse_mode=enums.ParseMode.HTML,
+                    sleep_threshold=0,
+                )
         await cls.bot.start()
         cls.NAME = cls.bot.me.username
 
@@ -82,19 +96,32 @@ class TgClient:
                         link_preview_options=LinkPreviewOptions(is_disabled=True),
                     )
                 except TypeError:
-                    # Fallback for older pyrogram versions
-                    cls.user = Client(
-                        "user",
-                        Config.TELEGRAM_API,
-                        Config.TELEGRAM_HASH,
-                        proxy=Config.TG_PROXY,
-                        session_string=Config.USER_SESSION_STRING,
-                        workdir="./sessions",
-                        parse_mode=enums.ParseMode.HTML,
-                        sleep_threshold=60,
-                        max_concurrent_transmissions=10,
-                        link_preview_options=LinkPreviewOptions(is_disabled=True),
-                    )
+                    # Fallback for older pyrogram versions - try without cache parameters
+                    try:
+                        cls.user = Client(
+                            "user",
+                            Config.TELEGRAM_API,
+                            Config.TELEGRAM_HASH,
+                            proxy=Config.TG_PROXY,
+                            session_string=Config.USER_SESSION_STRING,
+                            workdir="./sessions",
+                            parse_mode=enums.ParseMode.HTML,
+                            sleep_threshold=60,
+                            max_concurrent_transmissions=10,
+                            link_preview_options=LinkPreviewOptions(is_disabled=True),
+                        )
+                    except TypeError:
+                        # Final fallback for very old pyrogram versions
+                        cls.user = Client(
+                            "user",
+                            Config.TELEGRAM_API,
+                            Config.TELEGRAM_HASH,
+                            proxy=Config.TG_PROXY,
+                            session_string=Config.USER_SESSION_STRING,
+                            workdir="./sessions",
+                            parse_mode=enums.ParseMode.HTML,
+                            sleep_threshold=60,
+                        )
                 await cls.user.start()
                 cls.IS_PREMIUM_USER = cls.user.me.is_premium
                 if cls.IS_PREMIUM_USER:
