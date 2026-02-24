@@ -39,9 +39,30 @@ class TorrentManager:
 
     @classmethod
     async def initiate(cls):
+        # Try qBittorrent on different addresses (some servers use IPv6 only)
+        qb_urls = [
+            "http://127.0.0.1:8090/api/v2/",  # IPv4
+            "http://[::1]:8090/api/v2/",      # IPv6
+            "http://localhost:8090/api/v2/",  # localhost fallback
+        ]
+        
+        qb_client = None
+        for url in qb_urls:
+            try:
+                LOGGER.debug(f"Trying qBittorrent at {url}")
+                qb_client = await create_client(url)
+                LOGGER.info(f"Successfully connected to qBittorrent at {url}")
+                break
+            except Exception as e:
+                LOGGER.debug(f"Failed to connect to qBittorrent at {url}: {e}")
+                continue
+        
+        if qb_client is None:
+            raise ConnectionError("Could not connect to qBittorrent on any address")
+        
         cls.aria2, cls.qbittorrent = await gather(
             Aria2WebsocketClient.new("http://127.0.0.1:6800/jsonrpc"),
-            create_client("http://127.0.0.1:8090/api/v2/"),
+            qb_client,
         )
         cls.qbittorrent = wrap_with_retry(cls.qbittorrent)
 
