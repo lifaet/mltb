@@ -3,9 +3,6 @@ substantial modifications and is designed for efficiently mirroring or leeching 
 destinations, including Google Drive, Telegram, or any rclone-supported cloud. It is built using asynchronous
 programming in Python.
 
-- **TELEGRAM CHANNEL:** https://t.me/mltb_official_channel
-- **TELEGRAM GROUP:** https://t.me/mltb_official_support
-
 <details>
   <summary><h1>Features</h1></summary>
 
