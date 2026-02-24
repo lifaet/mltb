@@ -214,7 +214,7 @@ def setup_python_environment():
 
         if result.returncode != 0:
             print(f"❌ Failed to install dependencies: {result.stderr}")
-            # return False
+            return False
 
         print("✅  environment ready!")
         return True
