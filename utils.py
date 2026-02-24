@@ -85,7 +85,7 @@ def run_application_complete():
         if not check_system_dependencies():
             return False
 
-        # Step 3: Setup virtual environment and install dependencies
+        # Step 3: Setup  environment and install dependencies
         if not setup_python_environment():
             return False
 
@@ -172,25 +172,25 @@ def check_system_dependencies():
     return True
 
 def setup_python_environment():
-    """Setup Python virtual environment and install dependencies"""
-    print("🐍 Setting up Python virtual environment...")
+    """Setup Python  environment and install dependencies"""
+    print("🐍 Setting up Python  environment...")
 
     # venv_dir = "mltbenv"
 
-    # Create virtual environment if it doesn't exist
+    # Create  environment if it doesn't exist
     # if not os.path.exists(venv_dir):
-    #     print("📦 Creating virtual environment...")
+    #     print("📦 Creating  environment...")
     #     try:
     #         result = subprocess.run(["python3", "-m", "venv", venv_dir],
     #                               capture_output=True, text=True)
     #         if result.returncode != 0:
-    #             print(f"❌ Failed to create virtual environment: {result.stderr}")
+    #             print(f"❌ Failed to create  environment: {result.stderr}")
     #             return False
     #     except Exception as e:
-    #         print(f"❌ Error creating virtual environment: {e}")
+    #         print(f"❌ Error creating  environment: {e}")
     #         return False
     # else:
-    #     print("📦 Virtual environment already exists.")
+    #     print("📦  environment already exists.")
 
     # Activate environment and install dependencies
     pip_cmd = "pip"
@@ -216,7 +216,7 @@ def setup_python_environment():
             print(f"❌ Failed to install dependencies: {result.stderr}")
             return False
 
-        print("✅ Virtual environment ready!")
+        print("✅  environment ready!")
         return True
 
     except Exception as e:
@@ -316,10 +316,10 @@ def start_bot_process():
     print("🤖 Starting Telegram bot...")
 
     try:
-        # Check if virtual environment exists
+        # Check if  environment exists
         venv_python = os.path.join("mltbenv", "bin", "python3")
         if not os.path.exists(venv_python):
-            print("❌ Virtual environment not found!")
+            print("❌  environment not found!")
             return False
 
         # Optional update
