@@ -298,7 +298,14 @@ def start_download_services():
                       "-b", "0", "-d", "-c", "-l", "0", "--console"]
             # Set PYTHONPATH to ensure SABnzbd can find all required modules
             env = os.environ.copy()
-            env["PYTHONPATH"] = "/usr/lib/python3/dist-packages:/usr/lib/python3.12/dist-packages"
+            py_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+            python_paths = [
+                "/usr/lib/python3/dist-packages",
+                f"/usr/lib/{py_version}/dist-packages",
+                os.path.expanduser(f"~/.local/lib/{py_version}/site-packages"),
+                "/usr/local/lib/python3/dist-packages"
+            ]
+            env["PYTHONPATH"] = ":".join(python_paths)
             process = subprocess.Popen(sab_cmd, env=env)
             pids.append(process.pid)
         except Exception as e:
@@ -348,11 +355,19 @@ def start_bot_process():
         with open(".bot.log", "a") as log_file:
             # Set PYTHONPATH to find all installed packages
             env = os.environ.copy()
+            
+            # Dynamically detect Python version and build PYTHONPATH
+            py_version = f"python{sys.version_info.major}.{sys.version_info.minor}"
             python_paths = [
                 "/usr/lib/python3/dist-packages",
-                "/usr/lib/python3.12/dist-packages",
-                os.path.expanduser("~/.local/lib/python3.12/site-packages")
+                f"/usr/lib/{py_version}/dist-packages",
+                os.path.expanduser(f"~/.local/lib/{py_version}/site-packages"),
+                "/usr/local/lib/python3/dist-packages"
             ]
+            # Add any existing PYTHONPATH
+            if "PYTHONPATH" in env:
+                python_paths.insert(0, env["PYTHONPATH"])
+            
             env["PYTHONPATH"] = ":".join(python_paths)
             
             process = subprocess.Popen(
