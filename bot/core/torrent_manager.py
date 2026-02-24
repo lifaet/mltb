@@ -1,7 +1,7 @@
 from aioaria2 import Aria2WebsocketClient
 from aioqbt.client import create_client
 from asyncio import gather, TimeoutError, wait_for
-from aiohttp import ClientError, TCPConnector, ClientSession
+from aiohttp import ClientError
 from pathlib import Path
 from inspect import iscoroutinefunction
 from tenacity import (
@@ -49,24 +49,16 @@ class TorrentManager:
         qb_client = None
         last_error = None
         
-        # Create a connector with SSL disabled
-        connector = TCPConnector(ssl=False, limit=10)
-        
         for url in qb_urls:
             try:
                 LOGGER.debug(f"Trying qBittorrent at {url}")
-                # Try with explicit session first
-                session = ClientSession(connector=connector)
-                try:
-                    qb_client = await wait_for(
-                        create_client(url, session=session),
-                        timeout=10
-                    )
-                    LOGGER.info(f"Successfully connected to qBittorrent at {url}")
-                    break
-                except Exception:
-                    await session.close()
-                    raise
+                # Try plain create_client without session/connector
+                qb_client = await wait_for(
+                    create_client(url),
+                    timeout=10
+                )
+                LOGGER.info(f"Successfully connected to qBittorrent at {url}")
+                break
             except TimeoutError:
                 last_error = f"Timeout connecting to {url}"
                 LOGGER.debug(f"Timeout connecting to qBittorrent at {url}")
@@ -79,13 +71,18 @@ class TorrentManager:
         if qb_client is None:
             error_msg = f"Could not connect to qBittorrent on any address. Last error: {last_error}"
             LOGGER.error(error_msg)
-            raise ConnectionError(error_msg)
+            # For now, continue without qBittorrent rather than failing completely
+            LOGGER.warning("Continuing without qBittorrent - some features may not work")
+            cls.qbittorrent = None
+        else:
+            cls.qbittorrent = wrap_with_retry(qb_client)
         
-        cls.aria2, cls.qbittorrent = await gather(
-            Aria2WebsocketClient.new("http://127.0.0.1:6800/jsonrpc"),
-            qb_client,
-        )
-        cls.qbittorrent = wrap_with_retry(cls.qbittorrent)
+        # Initialize aria2
+        try:
+            cls.aria2 = await Aria2WebsocketClient.new("http://127.0.0.1:6800/jsonrpc")
+        except Exception as e:
+            LOGGER.error(f"Failed to connect to aria2: {e}")
+            raise
 
     @classmethod
     async def close_all(cls):
