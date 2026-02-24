@@ -25,20 +25,38 @@ class TgClient:
     async def start_bot(cls):
         LOGGER.info("Creating client from BOT_TOKEN")
         cls.ID = Config.BOT_TOKEN.split(":", 1)[0]
-        cls.bot = Client(
-            cls.ID,
-            Config.TELEGRAM_API,
-            Config.TELEGRAM_HASH,
-            proxy=Config.TG_PROXY,
-            bot_token=Config.BOT_TOKEN,
-            workdir="./sessions",
-            parse_mode=enums.ParseMode.HTML,
-            max_concurrent_transmissions=10,
-            max_message_cache_size=15000,
-            max_topic_cache_size=15000,
-            sleep_threshold=0,
-            link_preview_options=LinkPreviewOptions(is_disabled=True),
-        )
+        # Build client initialization with backward compatibility
+        try:
+            # Try with newer parameters first
+            cls.bot = Client(
+                cls.ID,
+                Config.TELEGRAM_API,
+                Config.TELEGRAM_HASH,
+                proxy=Config.TG_PROXY,
+                bot_token=Config.BOT_TOKEN,
+                workdir="./sessions",
+                parse_mode=enums.ParseMode.HTML,
+                max_concurrent_transmissions=10,
+                max_message_cache_size=15000,
+                max_topic_cache_size=15000,
+                sleep_threshold=0,
+                link_preview_options=LinkPreviewOptions(is_disabled=True),
+            )
+        except TypeError:
+            # Fallback for older pyrogram versions
+            LOGGER.warning("Using fallback Client initialization for older pyrogram")
+            cls.bot = Client(
+                cls.ID,
+                Config.TELEGRAM_API,
+                Config.TELEGRAM_HASH,
+                proxy=Config.TG_PROXY,
+                bot_token=Config.BOT_TOKEN,
+                workdir="./sessions",
+                parse_mode=enums.ParseMode.HTML,
+                max_concurrent_transmissions=10,
+                sleep_threshold=0,
+                link_preview_options=LinkPreviewOptions(is_disabled=True),
+            )
         await cls.bot.start()
         cls.NAME = cls.bot.me.username
 
@@ -47,20 +65,36 @@ class TgClient:
         if Config.USER_SESSION_STRING:
             LOGGER.info("Creating client from USER_SESSION_STRING")
             try:
-                cls.user = Client(
-                    "user",
-                    Config.TELEGRAM_API,
-                    Config.TELEGRAM_HASH,
-                    proxy=Config.TG_PROXY,
-                    session_string=Config.USER_SESSION_STRING,
-                    workdir="./sessions",
-                    parse_mode=enums.ParseMode.HTML,
-                    sleep_threshold=60,
-                    max_concurrent_transmissions=10,
-                    max_message_cache_size=15000,
-                    max_topic_cache_size=15000,
-                    link_preview_options=LinkPreviewOptions(is_disabled=True),
-                )
+                try:
+                    # Try with newer parameters first
+                    cls.user = Client(
+                        "user",
+                        Config.TELEGRAM_API,
+                        Config.TELEGRAM_HASH,
+                        proxy=Config.TG_PROXY,
+                        session_string=Config.USER_SESSION_STRING,
+                        workdir="./sessions",
+                        parse_mode=enums.ParseMode.HTML,
+                        sleep_threshold=60,
+                        max_concurrent_transmissions=10,
+                        max_message_cache_size=15000,
+                        max_topic_cache_size=15000,
+                        link_preview_options=LinkPreviewOptions(is_disabled=True),
+                    )
+                except TypeError:
+                    # Fallback for older pyrogram versions
+                    cls.user = Client(
+                        "user",
+                        Config.TELEGRAM_API,
+                        Config.TELEGRAM_HASH,
+                        proxy=Config.TG_PROXY,
+                        session_string=Config.USER_SESSION_STRING,
+                        workdir="./sessions",
+                        parse_mode=enums.ParseMode.HTML,
+                        sleep_threshold=60,
+                        max_concurrent_transmissions=10,
+                        link_preview_options=LinkPreviewOptions(is_disabled=True),
+                    )
                 await cls.user.start()
                 cls.IS_PREMIUM_USER = cls.user.me.is_premium
                 if cls.IS_PREMIUM_USER:
