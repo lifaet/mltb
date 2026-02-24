@@ -86,8 +86,8 @@ def run_application_complete():
             return False
 
         # Step 3: Setup virtual environment and install dependencies
-        # if not setup_python_environment():
-        #     return False
+        if not setup_python_environment():
+            return False
 
         # Step 4: Start services
         if not start_download_services():
@@ -175,7 +175,7 @@ def setup_python_environment():
     """Setup Python virtual environment and install dependencies"""
     print("🐍 Setting up Python virtual environment...")
 
-    venv_dir = "mltbenv"
+    venv_dir = "botenv"
 
     # Create virtual environment if it doesn't exist
     if not os.path.exists(venv_dir):
